@@ -12,6 +12,7 @@
 - Landing UI approach: token-driven design system (CSS variables + Tailwind extension)
 - Shared primitives for marketing pages: `Button`, `Badge`, `Surface`, `Container`, `SectionHeading`
 - Auth/API approach: OpenAPI-first contract for login, signup, email verification, and current-user profile
+- Deployment approach: Vercel for development/preview hosting with SPA rewrite via `vercel.json`
 
 ## 2026-03-09
 - GitHub collaboration workflow: issue forms for bug report and feature request, with blank issues disabled
