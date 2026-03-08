@@ -53,23 +53,7 @@
 		color: hsl(var(--foreground));
 		word-break: keep-all;
 		line-break: strict;
-		background:
-			radial-gradient(
-				circle at 12% 9%,
-				hsl(var(--primary) / 0.16),
-				transparent 34%
-			),
-			radial-gradient(
-				circle at 84% 18%,
-				hsl(var(--accent) / 0.18),
-				transparent 36%
-			),
-			linear-gradient(
-				180deg,
-				hsl(var(--brand-soft)),
-				hsl(var(--background)) 36%,
-				hsl(var(--brand-warm)) 100%
-			);
+		background: hsl(var(--background));
 		text-rendering: optimizeLegibility;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
@@ -138,6 +122,26 @@
 			0 2px 3px rgb(30 50 70 / 0.04),
 			0 14px 34px rgb(18 44 79 / 0.12);
 		backdrop-filter: blur(6px);
+	}
+
+	.ds-landing-bg {
+		background:
+			radial-gradient(
+				circle at 12% 9%,
+				hsl(var(--primary) / 0.16),
+				transparent 34%
+			),
+			radial-gradient(
+				circle at 84% 18%,
+				hsl(var(--accent) / 0.18),
+				transparent 36%
+			),
+			linear-gradient(
+				180deg,
+				hsl(var(--brand-soft)),
+				hsl(var(--background)) 36%,
+				hsl(var(--brand-warm)) 100%
+			);
 	}
 
 	.ds-title-gradient {

@@ -1,0 +1,579 @@
+openapi: 3.1.0
+info:
+  title: MatchQueue User API
+  version: 0.1.0
+  summary: Authentication and current-user endpoints for the MatchQueue frontend MVP.
+  description: |
+    Initial contract for the user-facing authentication flow used by the frontend
+    routes `/login`, `/signup`, `/verify-email`, and `/me`.
+servers:
+  - url: /api
+    description: Local API base path
+tags:
+  - name: Auth
+    description: Authentication and email verification
+  - name: Users
+    description: User account resources
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      operationId: loginWithEmailPassword
+      summary: Log in with email and password
+      description: Issues a session token pair and returns the current user profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              default:
+                value:
+                  email: preview@matchqueue.dev
+                  password: matchqueue123!
+      responses:
+        '200':
+          description: Login completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              examples:
+                success:
+                  value:
+                    user:
+                      id: usr_01HQ7ZJ5M3P8Q2A2F4F4Q7T3VV
+                      email: preview@matchqueue.dev
+                      nickname: queue_runner
+                      profileImageUrl: https://images.matchqueue.dev/profiles/preview.png
+                      emailVerified: true
+                      createdAt: '2026-03-05T09:00:00Z'
+                      verifiedAt: '2026-03-05T09:15:00Z'
+                    session:
+                      accessToken: mq_access_demo_token
+                      refreshToken: mq_refresh_demo_token
+                      tokenType: Bearer
+                      expiresAt: '2026-03-08T18:30:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users:
+    post:
+      tags:
+        - Users
+      operationId: createUser
+      summary: Sign up a new user
+      description: Creates a user account with email/password authentication and an optional profile image upload.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            examples:
+              default:
+                value:
+                  email: new.dev@matchqueue.dev
+                  password: matchqueue123!
+                  nickname: sprintmaker
+                  profileImage: <binary image file>
+      responses:
+        '201':
+          description: User created and verification email queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+              examples:
+                success:
+                  value:
+                    user:
+                      id: usr_01HQ81GHZ4BHZSE1M6P63PQXTX
+                      email: new.dev@matchqueue.dev
+                      nickname: sprintmaker
+                      profileImageUrl: https://images.matchqueue.dev/profiles/sprintmaker.png
+                      emailVerified: false
+                      createdAt: '2026-03-08T07:00:00Z'
+                      verifiedAt: null
+                    verification:
+                      email: new.dev@matchqueue.dev
+                      deliveryStatus: queued
+                      resendAfterSeconds: 60
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/email-verifications:
+    post:
+      tags:
+        - Auth
+      operationId: resendEmailVerification
+      summary: Resend a verification email
+      description: Reissues a verification message for an existing user account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerificationRequest'
+            examples:
+              default:
+                value:
+                  email: new.dev@matchqueue.dev
+      responses:
+        '200':
+          description: Verification email queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResendEmailVerificationResponse'
+              examples:
+                success:
+                  value:
+                    email: new.dev@matchqueue.dev
+                    deliveryStatus: queued
+                    resendAfterSeconds: 60
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth/email-verifications/confirm:
+    post:
+      tags:
+        - Auth
+      operationId: confirmEmailVerification
+      summary: Confirm an email verification token
+      description: Marks the user email as verified when a valid token is submitted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmEmailVerificationRequest'
+            examples:
+              default:
+                value:
+                  email: new.dev@matchqueue.dev
+                  token: MATCHQUEUE-2026
+      responses:
+        '200':
+          description: Email confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConfirmEmailVerificationResponse'
+              examples:
+                success:
+                  value:
+                    user:
+                      id: usr_01HQ81GHZ4BHZSE1M6P63PQXTX
+                      email: new.dev@matchqueue.dev
+                      nickname: sprintmaker
+                      profileImageUrl: https://images.matchqueue.dev/profiles/sprintmaker.png
+                      emailVerified: true
+                      createdAt: '2026-03-08T07:00:00Z'
+                      verifiedAt: '2026-03-08T07:03:00Z'
+                    verifiedAt: '2026-03-08T07:03:00Z'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /users/me:
+    get:
+      tags:
+        - Users
+      operationId: getCurrentUser
+      summary: Get the current user profile
+      description: Returns the authenticated user's profile for the `/me` page.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCurrentUserResponse'
+              examples:
+                success:
+                  value:
+                    user:
+                      id: usr_01HQ7ZJ5M3P8Q2A2F4F4Q7T3VV
+                      email: preview@matchqueue.dev
+                      nickname: queue_runner
+                      profileImageUrl: https://images.matchqueue.dev/profiles/preview.png
+                      emailVerified: true
+                      createdAt: '2026-03-05T09:00:00Z'
+                      verifiedAt: '2026-03-05T09:15:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - Users
+      operationId: updateCurrentUser
+      summary: Update the current user profile
+      description: Updates the nickname and optional profile image for the signed-in user. Email cannot be changed.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateCurrentUserRequest'
+            examples:
+              default:
+                value:
+                  nickname: sprintmaker_v2
+                  profileImage: <binary image file>
+      responses:
+        '200':
+          description: Current user updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateCurrentUserResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Users
+      operationId: deleteCurrentUser
+      summary: Delete the current user account
+      description: Deletes the signed-in user's account.
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Account deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - email
+        - nickname
+        - profileImageUrl
+        - emailVerified
+        - createdAt
+        - verifiedAt
+      properties:
+        id:
+          type: string
+          description: Unique user identifier
+          examples:
+            - usr_01HQ7ZJ5M3P8Q2A2F4F4Q7T3VV
+        email:
+          type: string
+          format: email
+          examples:
+            - preview@matchqueue.dev
+        nickname:
+          type: string
+          minLength: 2
+          maxLength: 24
+          examples:
+            - queue_runner
+        profileImageUrl:
+          type:
+            - string
+            - 'null'
+          format: uri
+          examples:
+            - https://images.matchqueue.dev/profiles/preview.png
+        emailVerified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        verifiedAt:
+          type:
+            - string
+            - 'null'
+          format: date-time
+    Session:
+      type: object
+      additionalProperties: false
+      required:
+        - accessToken
+        - refreshToken
+        - tokenType
+        - expiresAt
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          enum:
+            - Bearer
+        expiresAt:
+          type: string
+          format: date-time
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+    LoginResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - user
+        - session
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        session:
+          $ref: '#/components/schemas/Session'
+    CreateUserRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+        - password
+        - nickname
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+        nickname:
+          type: string
+          minLength: 2
+          maxLength: 24
+        profileImage:
+          type:
+            - string
+            - 'null'
+          format: binary
+    VerificationDeliveryStatus:
+      type: string
+      enum:
+        - queued
+        - sent
+        - throttled
+    VerificationDelivery:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+        - deliveryStatus
+        - resendAfterSeconds
+      properties:
+        email:
+          type: string
+          format: email
+        deliveryStatus:
+          $ref: '#/components/schemas/VerificationDeliveryStatus'
+        resendAfterSeconds:
+          type: integer
+          minimum: 0
+    CreateUserResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - user
+        - verification
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        verification:
+          $ref: '#/components/schemas/VerificationDelivery'
+    ResendEmailVerificationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+    ResendEmailVerificationResponse:
+      $ref: '#/components/schemas/VerificationDelivery'
+    ConfirmEmailVerificationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+        - token
+      properties:
+        email:
+          type: string
+          format: email
+        token:
+          type: string
+          minLength: 6
+          maxLength: 128
+    ConfirmEmailVerificationResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - user
+        - verifiedAt
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        verifiedAt:
+          type: string
+          format: date-time
+    GetCurrentUserResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - user
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+    UpdateCurrentUserRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - nickname
+      properties:
+        nickname:
+          type: string
+          minLength: 2
+          maxLength: 24
+        profileImage:
+          type:
+            - string
+            - 'null'
+          format: binary
+    UpdateCurrentUserResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - user
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+    ApiError:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          examples:
+            - invalid_credentials
+        message:
+          type: string
+          examples:
+            - Email or password is incorrect.
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          examples:
+            email:
+              - Enter a valid email address.
+            password:
+              - Password must be at least 8 characters long.
+  responses:
+    BadRequest:
+      description: Validation failed or the request payload was malformed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          examples:
+            invalidPayload:
+              value:
+                code: validation_failed
+                message: Request validation failed.
+                fieldErrors:
+                  email:
+                    - Enter a valid email address.
+    Unauthorized:
+      description: Authentication failed or the caller is not signed in
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          examples:
+            invalidCredentials:
+              value:
+                code: invalid_credentials
+                message: Email or password is incorrect.
+    Conflict:
+      description: Resource state conflicts with the request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          examples:
+            duplicateEmail:
+              value:
+                code: email_already_exists
+                message: An account with this email already exists.
+                fieldErrors:
+                  email:
+                    - Use a different email address.
+    NotFound:
+      description: The requested user or verification request was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          examples:
+            missingUser:
+              value:
+                code: user_not_found
+                message: No user account matches the provided email.
+    InternalServerError:
+      description: Unexpected backend failure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          examples:
+            generic:
+              value:
+                code: internal_server_error
+                message: Something went wrong while processing the request.

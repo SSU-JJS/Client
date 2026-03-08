@@ -12,6 +12,11 @@ const config: Config = {
 			},
 			colors: {
 				background: "hsl(var(--background))",
+				brand: {
+					ink: "hsl(var(--brand-ink))",
+					soft: "hsl(var(--brand-soft))",
+					warm: "hsl(var(--brand-warm))",
+				},
 				foreground: "hsl(var(--foreground))",
 				card: {
 					DEFAULT: "hsl(var(--card))",
