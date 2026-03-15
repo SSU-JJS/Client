@@ -1,0 +1,3 @@
+interface:
+  display_name: "GitHub workflow"
+  short_description: "Creates issues, branches, commits, pushes, and pull requests for this repository's delivery flow."
