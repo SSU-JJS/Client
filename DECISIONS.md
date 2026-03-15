@@ -18,3 +18,6 @@
 - GitHub collaboration workflow: issue forms for bug report and feature request, with blank issues disabled
 - Pull request workflow: PR template plus GitHub Actions CI running `pnpm typecheck`, `pnpm lint`, and `pnpm build` on every pull request
 - Generated MSW service worker file `public/mockServiceWorker.js` is excluded from Biome checks to avoid third-party warning noise
+
+## 2026-03-10
+- Repository automation skill: local `.agents/skills/github-workflow` documents the standard issue → branch → validation → commit → push → PR flow for repeatable GitHub handoff work
