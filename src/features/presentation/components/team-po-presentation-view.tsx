@@ -49,6 +49,7 @@ import {
 	teamSpaceFeatures,
 } from "@/features/presentation/constants";
 import { cn } from "@/lib/utils";
+import "./team-po-presentation-view.css";
 
 const teamMembers = ["장다은", "김황조", "박상혁", "정종우"];
 const teamLeaderName = "장다은";
@@ -278,7 +279,7 @@ export function TeamPoPresentationView() {
 	return (
 		<div
 			className={cn(
-				"ds-presentation-bg relative min-h-screen overflow-hidden",
+				"team-po-presentation relative min-h-screen overflow-hidden",
 				isCaptureMode && "presentation-capture",
 			)}
 		>
